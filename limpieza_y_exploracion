@@ -1,0 +1,89 @@
+# Importar la librería a usar
+
+import pandas as pd
+
+# Cargar el conjunto de datos a usar
+netflix_df = pd.read_csv("C:\\Users\\Mariana\\Desktop\\Proyectos\\PROYECTO NETFLIX\\netflix_titles.csv")
+
+# Ver el conjunto de datos
+print(netflix_df)
+
+# Revisar si hay duplicados
+duplicates_count = netflix_df['show_id'].duplicated().sum()
+print(netflix_df[netflix_df.duplicated(subset=['show_id'], keep=False)])
+
+# Revisar los valores nulos todas las columnas
+null_counts = netflix_df.isnull().sum()
+print(null_counts)
+
+# Llenar los valores nulos de 'director' en base al 'cast'
+director_mapping = {'David Attenborough': 'Alastair Fothergill'}
+netflix_df['director'].fillna(netflix_df['cast'].map(director_mapping), inplace=True)
+netflix_df['director'].fillna('Not Given', inplace=True)
+
+# Llenar los valores nulos de 'country' en base al 'director'
+country_mapping = netflix_df.groupby('director')['country'].first().to_dict()
+netflix_df['country'].fillna(netflix_df['director'].map(country_mapping), inplace=True)
+netflix_df['country'].fillna('Not Given', inplace=True)
+
+# Filas donde 'country' aún es nulo, enfocándose en las columnas 'director', 'country' y 'date_added'.
+print(netflix_df[netflix_df['country'].isnull()][['director', 'country', 'date_added']])
+
+# Eliminar las filas con 'date_added' nulo
+netflix_df.dropna(subset=['date_added'], inplace=True)
+
+# Eliminar las filas con 'rating' nulo
+netflix_df.dropna(subset=['rating'], inplace=True)
+
+# Eliminar las filas con 'duration' nulo
+netflix_df.dropna(subset=['duration'], inplace=True)
+
+# Revisar nuevamente los valores nulos
+null_counts_after_cleaning = netflix_df.isnull().sum()
+print(null_counts_after_cleaning)
+
+# Eliminar columnas innecesarias
+netflix_df.drop(columns=['cast', 'description'], inplace=True)
+
+# Dividir la columna 'country' y mantener solo el primero
+netflix_df['country'] = netflix_df['country'].str.split(',').str[0]
+
+# Guardar el conjunto de datos limpio
+netflix_df.to_csv('C:\\Users\\Mariana\\Desktop\\Proyectos\\PROYECTO NETFLIX\\netflix_cleaned.csv', index=False)
+
+# Obtener estadísticas descriptivas
+summary_stats = netflix_df.describe(include='all')
+
+# Conteo de valores únicos en 'type'
+type_counts = netflix_df['type'].value_counts()
+
+# Conteo de valores únicos en 'country'
+country_counts = netflix_df['country'].value_counts().head(15)
+
+# Conteo de valores únicos en 'rating'
+rating_counts = netflix_df['rating'].value_counts()
+
+# Conteo de valores únicos en 'release_year'
+release_year_counts = netflix_df['release_year'].value_counts().head(15)
+
+# Conteo de valores únicos en 'release_year'
+listed_in_counts = netflix_df['listed_in'].value_counts().head(15)
+
+# Mostrar resultados
+print("Resumen de estadísticas descriptivas:")
+print(summary_stats)
+
+print("\nConteo de tipos (TV Show o película):")
+print(type_counts)
+
+print("\nConteo de países (Top 15):")
+print(country_counts)
+
+print("\nConteo de clasificaciones:")
+print(rating_counts)
+
+print("\nConteo de años de estreno (Top 15):")
+print(release_year_counts)
+
+print("\nConteo de años de listed_in (Top 15):")
+print(listed_in_counts)
